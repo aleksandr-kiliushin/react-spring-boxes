@@ -70,10 +70,10 @@ function App() {
     <>
       <div className="controls">
         <button className="control add-box" onClick={onAdd}>
-          Add
+          ADD
         </button>
         <button className="control delete-box" onClick={onRemove}>
-          Delete
+          DELETE
         </button>
       </div>
       <ul className="list">
@@ -81,6 +81,7 @@ function App() {
           <animated.li
             style={{
               width: '20vw',
+              height: '20vw',
               backgroundColor: box.color,
               ...addBoxSprings,
               ...(status === 'DELETING' && boxIndex === boxes.length - 1 ? removeBoxSprings : {}),
