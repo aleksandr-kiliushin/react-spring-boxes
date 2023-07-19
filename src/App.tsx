@@ -76,21 +76,19 @@ function App() {
           Delete
         </button>
       </div>
-      <div className="container">
-        {boxes.map((box, boxIndex) => {
-          return (
-            <animated.div
-              style={{
-                width: '20vw',
-                backgroundColor: box.color,
-                ...addBoxSprings,
-                ...(status === 'DELETING' && boxIndex === boxes.length - 1 ? removeBoxSprings : {}),
-              }}
-              key={box.id}
-            />
-          )
-        })}
-      </div>
+      <ul className="list">
+        {boxes.map((box, boxIndex) => (
+          <animated.li
+            style={{
+              width: '20vw',
+              backgroundColor: box.color,
+              ...addBoxSprings,
+              ...(status === 'DELETING' && boxIndex === boxes.length - 1 ? removeBoxSprings : {}),
+            }}
+            key={box.id}
+          />
+        ))}
+      </ul>
     </>
   )
 }
