@@ -1,33 +1,96 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState, store } from './store'
+import { addBox, deleteBox, setStatus } from './store/boxesSlice'
+import { animated, useSpring } from '@react-spring/web'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const boxes = useSelector((state: RootState) => state.boxes.boxes)
+  const status = useSelector((state: RootState) => state.boxes.status)
+  const dispatch = useDispatch()
+
+  const [addBoxSprings, addBoxApi] = useSpring(() => ({}))
+  const [removeBoxSprings, removeBoxApi] = useSpring(() => ({}))
+
+  const onAdd = () => {
+    if (status !== 'READY') {
+      return
+    }
+
+    addBoxApi.start({
+      from: {
+        x: -(innerWidth / 5),
+      },
+      to: {
+        x: 0,
+      },
+      config: {
+        duration: 250,
+      },
+      onStart: () => {
+        dispatch(addBox())
+        dispatch(setStatus({ status: 'ADDING' }))
+      },
+      onResolve: () => {
+        const boxesCountOnWhenAnimationFinished = store.getState().boxes.boxes.length
+        if (boxesCountOnWhenAnimationFinished > 5) {
+          dispatch(deleteBox())
+        }
+        dispatch(setStatus({ status: 'READY' }))
+      },
+    })
+  }
+
+  const onRemove = () => {
+    if (status !== 'READY') {
+      return
+    }
+
+    removeBoxApi.start({
+      from: {
+        x: 0,
+      },
+      to: {
+        x: window.innerWidth,
+      },
+      config: {
+        duration: 500,
+      },
+      onStart: () => {
+        dispatch(setStatus({ status: 'DELETING' }))
+      },
+      onResolve: () => {
+        dispatch(deleteBox())
+        dispatch(setStatus({ status: 'READY' }))
+      },
+    })
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+      <div className="controls">
+        <button className="control add-box" onClick={onAdd}>
+          Add
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button className="control delete-box" onClick={onRemove}>
+          Delete
+        </button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div className="container">
+        {boxes.map((box, boxIndex) => {
+          return (
+            <animated.div
+              style={{
+                width: '20vw',
+                backgroundColor: box.color,
+                ...addBoxSprings,
+                ...(status === 'DELETING' && boxIndex === boxes.length - 1 ? removeBoxSprings : {}),
+              }}
+              key={box.id}
+            />
+          )
+        })}
+      </div>
     </>
   )
 }
